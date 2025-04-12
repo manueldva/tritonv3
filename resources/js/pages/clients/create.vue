@@ -72,7 +72,7 @@ const submit = () => {
                 </div>
                 <div class="flex gap-4">
                     <Button type="submit" class="bg-indigo-500 hover:bg-indigo-700">Save</Button>
-                    <Button href="/clients" variant="outline">Cancel</Button>
+                    <Button type="button" @click="$inertia.visit('/clients')" variant="outline">Cancel</Button>
                 </div>
             </form>
         </div>

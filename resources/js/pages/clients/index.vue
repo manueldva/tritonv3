@@ -25,7 +25,7 @@ const breadcrumbs: BreadcrumbItem[]= [{title: 'Clients', href: '/clients'}];
 const deleteClient = async (id: number) => {
     if(!window.confirm('Estas Seguro?')) return;
 
-    router.delete('clients/${id}', {
+    router.delete(`clients/${id}`, {
         preserveScroll: true,
         onSuccess: () => {
             router.visit('/clients', { replace: true}); // redirige a la lista actualizada
@@ -67,14 +67,12 @@ const deleteClient = async (id: number) => {
                             <TableCell>{{ client.status }}</TableCell>
                             <TableCell class="flex justify-center gap-2">
                                 <Button as-child size="sm" class="bg-blue-500 text-white hover:bg-blue-700">
-                                    <Link :href="'/clients/${client.id}/edit'"> 
+                                    <Link :href="`/clients/${client.id}/edit`"> 
                                         <Pencil />
                                     </Link>
                                 </Button>
                                 <Button size="sm" class="bg-rose-500 text-white hover:bg-rose-700" @click="deleteClient(client.id)">
-                                    <Link :href="'/clients/${client.id}/edit'"> 
-                                        <Trash />
-                                    </Link>
+                                    <Trash />
                                 </Button>
                             </TableCell>
                         </TableRow>

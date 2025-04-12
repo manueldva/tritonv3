@@ -72,8 +72,12 @@ class ClientController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Client $client)
     {
-        //
+        $client->delete();
+        return Inertia::render('clients/index', [
+            'clients' => Client::all(),
+            //'clients' => Client::select('id','name','lastname')->paginate(10),
+        ]);
     }
 }
