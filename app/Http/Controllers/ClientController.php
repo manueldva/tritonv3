@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Log;
 
 class ClientController extends Controller
 {
@@ -12,7 +14,10 @@ class ClientController extends Controller
      */
     public function index()
     {
-        return Inertia::render('clients/index');
+        return Inertia::render('clients/index', [
+            'clients' => Client::all(),
+            //'clients' => Client::select('id','name','lastname')->paginate(10),
+        ]);
     }
 
     /**
@@ -20,7 +25,7 @@ class ClientController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('clients/create');
     }
 
     /**
@@ -28,7 +33,16 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        Log::info('Datos recibidos:', $request->all());
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'document' => 'required|string|max:20',
+            
+        ]);
+        Client::create($request->all());
+        return redirect()->route('clients.index');
+
     }
 
     /**
