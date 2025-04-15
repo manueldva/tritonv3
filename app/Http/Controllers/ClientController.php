@@ -12,11 +12,21 @@ class ClientController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = Client::query();
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('lastname', 'like', "%{$search}%")
+                  ->orWhere('document', 'like', "%{$search}%");
+            });
+        }
+        //dd($query->toSql());
         return Inertia::render('clients/index', [
-            'clients' => Client::all(),
-            //'clients' => Client::select('id','name','lastname')->paginate(10),
+            'clients' => $query->paginate(10)->withQueryString(),
+            'search' => $search, // opcional, para que el input se mantenga
         ]);
     }
 
@@ -33,7 +43,7 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info('Datos recibidos:', $request->all());
+        //Log::info('Datos recibidos:', $request->all());
         $request->validate([
             'name' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
@@ -56,17 +66,33 @@ class ClientController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Client $client)
     {
-        //
+        return Inertia::render('clients/edit',[
+            'client' => $client
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Client $client)
     {
-        //
+        
+        Log::info('Datos recibidos:', $request->all());
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'document' => 'required|string|max:20',
+        ]);
+        $client->update($request->all());
+        /*$client->update([
+            'name' => $request->input('name'),
+            'lastname' => $request->input('lastname'),
+            'document' => $request->input('document'),
+            'status' => $request->boolean('status'), // <- esta línea es clave
+        ]);*/
+        return redirect()->route('clients.index');
     }
 
     /**
@@ -76,7 +102,7 @@ class ClientController extends Controller
     {
         $client->delete();
         return Inertia::render('clients/index', [
-            'clients' => Client::all(),
+            'clients' =>Client::paginate(10),
             //'clients' => Client::select('id','name','lastname')->paginate(10),
         ]);
     }
