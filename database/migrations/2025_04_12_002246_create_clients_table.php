@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('lastname');
             $table->string('document');
             $table->boolean('status')->default(false);
+            $table->foreignId('empresa_id')->nullable()->after('email')->constrained('empresas')->onDelete('set null'); 
+            $table->index('empresa_id');
             $table->timestamps();
         });
     }

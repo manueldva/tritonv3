@@ -26,11 +26,27 @@ export interface SharedData extends PageProps {
     sidebarOpen: boolean;
 }
 
+// resources/js/types/index.d.ts or similar
+export interface Empresa {
+    id: number;
+    name: string;
+    ruc: string | null;
+    address: string | null;
+    phone: string | null;
+    email: string | null;
+    status: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface User {
     id: number;
     name: string;
     email: string;
     avatar?: string;
+    is_admin: boolean;
+    is_active: boolean;
+    empresa_id: number;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
@@ -44,4 +60,5 @@ export interface Client {
     lastname: string;
     document: string;
     status: boolean;
+    empresa_id: number;
 }

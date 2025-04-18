@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'empresa_id', // <-- Añadido
+        'is_admin',   // <-- Añadido
+        'is_active',   // <-- Añadido
     ];
 
     /**
@@ -43,6 +46,20 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean', // <-- Castear a booleano
+            'is_active' => 'boolean', // <-- Castear a booleano
         ];
+    }
+
+    // Método para verificar si el usuario es admin (más explícito)
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
+    }
+
+    // Método para verificar si el usuario es admin (más explícito)
+    public function isActive(): bool
+    {
+        return (bool) $this->is_active;
     }
 }

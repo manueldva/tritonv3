@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\User; // Import the User model
 
 class AuthenticatedSessionController extends Controller
 {
@@ -31,9 +32,35 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
-        $request->session()->regenerate();
+        $user = $request->user();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        /*$request->session()->regenerate();
+
+        return redirect()->intended(route('dashboard', absolute: false));*/
+
+        if ($user->isAdmin()) {
+            // User is an admin, proceed with login
+            $request->session()->regenerate();
+            return redirect()->intended(route('dashboard', absolute: false)); // Or wherever admins should go
+
+        } elseif ($user->isActive()) {
+            // User is not an admin, but is active, proceed with login
+            $request->session()->regenerate();
+            return redirect()->intended(route('dashboard', absolute: false)); // Or wherever regular users should go
+
+        } else {
+            // User is neither admin nor active, log them out and show a message
+            Auth::logout(); // Log out the user immediately
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            // Redirect back to login with an error message
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your account is not active.', // Or a more specific message
+            ]);
+        }
+
     }
 
     /**

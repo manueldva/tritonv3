@@ -4,15 +4,24 @@ import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {  Select,  SelectContent,  SelectItem,  SelectTrigger,  SelectValue,} from '@/components/ui/select'; // Esta ruta ahora será válida
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+
+
+// Define las props, incluyendo 'empresas'
+const props = defineProps<{
+    empresas: { id: number; name: string }[];
+    // ... otras props si Fortify/Jetstream las pasa ...
+}>();
 
 const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
+    empresa_id: '', // <-- Añadido: Campo para almacenar el ID de la empresa seleccionada
 });
 
 const submit = () => {
@@ -38,6 +47,26 @@ const submit = () => {
                     <Label for="email">Email address</Label>
                     <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="email@example.com" />
                     <InputError :message="form.errors.email" />
+                </div>
+
+                <div class="grid gap-2">
+                    <Label for="empresa_id">Empresa</Label>
+
+                    <Select v-model="form.empresa_id">
+                        <SelectTrigger id="empresa_id" :tabindex="2.5" class="w-full">
+                            <SelectValue placeholder="-- Selecciona una empresa --" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                                v-for="empresa in props.empresas"
+                                :key="empresa.id"
+                                :value="empresa.id"
+                            >
+                                {{ empresa.name }}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <InputError :message="form.errors.empresa_id" />
                 </div>
 
                 <div class="grid gap-2">
