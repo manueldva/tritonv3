@@ -11,28 +11,26 @@ import { ref, computed } from 'vue'; // Necesitas ref y computed
 
 type BreadcrumbItem = { title: string; href: string };
 const breadcrumbs: BreadcrumbItem[] = [
-  { title: 'Clients', href: '/clients' },
+  { title: 'Usuarios', href: '/manageusers' },
   { title: 'Create', href: '#' }
 ];
 
 const form = ref<Partial<{
   name: string;
-  lastname: string;
-  document: string;
-  status: boolean;
+  email: string;
+  is_active: boolean;
 }>>({
   name: '',
-  lastname: '',
-  document: '',
-  status: true,
+  email: '',
+  is_active: true,
 });
 
 const resetForm = () => {
-  form.value = { name: '', lastname: '', document: '', status: true };
+  form.value = { name: '', email: '', is_active: true };
 };
 
 const submit = () => {
-  router.post('/clients', form.value, { onSuccess: resetForm });
+  router.post('/manageusers', form.value, { onSuccess: resetForm });
 };
 
 // *** Acceder a los errores de validación desde los props de la página ***
@@ -47,39 +45,37 @@ const validationErrors = computed(() => page.props.errors || {});
 
 <template>
 
-  <Head title="Crear Cliente" />
+  <Head title="Crear Usuario" />
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex flex-1 justify-center p-6">
       <div class="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-xl shadow-md p-8 space-y-6">
-        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Crear Cliente</h1>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Crear Usuario</h1>
 
         <form @submit.prevent="submit" class="space-y-6">
-          <div v-for="(label, key) in { name: 'Nombre', lastname: 'Apellido', document: 'Documento', status: 'Estado' }"
+          <div v-for="(label, key) in { name: 'Nombre', email: 'Email', is_active: 'Estado' }"
             :key="key" 
             class='space-y-2'
           >
-            
             <Label :for="key" class="text-gray-700 dark:text-gray-300">{{ label }}</Label>
 
-            <Input v-if="key !== 'status'" 
-            :id="key" 
-            v-model="form[key]" 
-            :type="key === 'document' ? 'number' : 'text'"
+            <Input v-if="key !== 'is_active'" 
+            :id="key" v-model="form[key]" 
+            :type="key === 'email' ? 'email' : 'text'"
             :placeholder="label" 
-            :required="key === 'name' ? true : undefined" class="w-full" />
+            :required=true class="w-full" />
 
-            <InputError v-if="key !== 'status'" 
+            <InputError v-if="key !== 'is_active'" 
             :message="validationErrors[key]" class="mt-2" />
 
             <div v-else class="flex items-center gap-3">
               <input 
               :id="key" 
-              v-model="form.status" 
+              v-model="form.is_active" 
               type="checkbox"
                 class="h-5 w-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" />
               <span class="text-sm text-gray-600 dark:text-gray-300">Activo</span>
             </div>
-            <InputError v-if="key === 'status'" 
+            <InputError v-if="key === 'is_active'" 
             :message="validationErrors.status" class="mt-2" />
           </div>
 
@@ -87,7 +83,7 @@ const validationErrors = computed(() => page.props.errors || {});
             <Button type="submit" class="bg-indigo-600 text-white hover:bg-indigo-700">
               Guardar
             </Button>
-            <Button as="a" href="/clients" variant="outline">
+            <Button as="a" href="/manageusers" variant="outline">
               Cancelar
             </Button>
           </div>

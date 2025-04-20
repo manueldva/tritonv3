@@ -62,4 +62,10 @@ class User extends Authenticatable
     {
         return (bool) $this->is_active;
     }
+
+    public function empresa() // <--- ESTE NOMBRE EXACTO
+    {
+        // Asegúrate de que \App\Models\Empresa::class sea la ruta correcta a tu modelo Empresa
+        return $this->belongsTo(\App\Models\Empresa::class);
+    }
 }

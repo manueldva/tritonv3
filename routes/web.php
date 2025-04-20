@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmpresaController;
+use App\Http\Controllers\ManageuserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -31,6 +32,14 @@ Route::middleware(['auth', 'verified'])->group(function() {
     Route::put('/empresas/{empresa}',[EmpresaController::class, 'update'])->name('empresas.update');
     Route::delete('/empresas/{empresa}',[EmpresaController::class, 'destroy'])->name('empresas.destroy');
 
+     // ¡Nuevas Rutas de Empresas!
+     Route::get('/manageusers',[ManageuserController::class, 'index'])->name('manageusers.index');
+     Route::get('/manageusers/create',[ManageuserController::class, 'create'])->name('manageusers.create');
+     Route::post('/manageusers',[ManageuserController::class, 'store'])->name('manageusers.store');
+     Route::get('/manageusers/{user}/edit',[ManageuserController::class, 'edit'])->name('manageusers.edit');
+     Route::put('/manageusers/{user}',[ManageuserController::class, 'update'])->name('manageusers.update');
+     Route::delete('/manageusers/{user}',[ManageuserController::class, 'destroy'])->name('manageusers.destroy');
+ 
 
 });
 

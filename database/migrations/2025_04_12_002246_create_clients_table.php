@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('lastname');
-            $table->string('document');
+            $table->string('lastname')->nullable();
+            $table->string('document')->nullable();
             $table->boolean('status')->default(false);
             $table->foreignId('empresa_id')->nullable()->after('email')->constrained('empresas')->onDelete('set null'); 
             $table->index('empresa_id');

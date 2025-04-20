@@ -42,28 +42,53 @@ const closeModal = () => {
     empresaToDelete.value = null; // Actualizado
 };
 
-const deleteEmpresa = async () => { // Renombrado
+/*
+const deleteEmpresa = async () => {
     if (empresaToDelete.value === null) return;
 
     try {
-        // Ruta actualizada
         await router.delete(`/empresas/${empresaToDelete.value}`, {
             preserveScroll: true,
             onSuccess: () => {
                 closeModal();
-                // router.visit('/empresas', { replace: true }); // Esto ya no es necesario si el controlador redirige
+                // ¡Añade/descomenta esta línea para forzar la recarga!
+                router.visit('/empresas', { replace: true });
             },
              onError: (errors) => {
                 console.error('Error al eliminar la empresa:', errors);
                 // Mostrar mensaje de error si el controlador envía uno (ej: FK constraint)
-                if (usePage().props.flash?.error) { // Asumiendo que usas Inertia flash messages
+                // Esto asume que usas flash messages en tu AppLayout o en otro lugar
+                if (usePage().props.flash?.error) {
                      alert(usePage().props.flash.error);
+                 } else {
+                     alert('Ocurrió un error al eliminar la empresa.'); // Mensaje genérico si no hay flash
                  }
             },
         });
     } catch (error) {
         console.error('Error general al eliminar la empresa:', error);
+        alert('Ocurrió un error inesperado.'); // Mensaje para errores de red, etc.
     }
+};
+*/
+
+const deleteEmpresa = async () => {
+    if (empresaToDelete.value === null) return;
+
+    router.delete(`/empresas/${empresaToDelete.value}`, {
+        preserveScroll: true,
+        preserveState: false, // <-- Clave: Fuerza a Inertia a recargar los props
+        onSuccess: () => {
+            closeModal();
+            // No hay router.visit aquí. Inertia debe manejar la recarga
+            // debido a preserveState: false y la redirección del backend.
+            // El mensaje flash y la tabla actualizada deberían llegar ahora.
+        },
+        onError: (errors) => {
+            console.error('Error al eliminar el empresa:', errors);
+            // Considera mostrar un mensaje de error al usuario
+        },
+    });
 };
 
 const performSearch = () => {

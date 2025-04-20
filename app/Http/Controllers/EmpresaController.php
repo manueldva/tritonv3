@@ -6,6 +6,7 @@ use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log; // Si quieres usar Log para depurar
+use Illuminate\Support\Facades\Auth; 
 
 class EmpresaController extends Controller
 {
@@ -14,7 +15,13 @@ class EmpresaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Empresa::query();
+        
+        if(Auth::user()->isAdmin()) {
+            $query = Empresa::query();
+        }else{
+            $query = Empresa::query()->where('id', Auth::user()->empresa_id);
+        }
+       
 
         // Similar a clientes, permite buscar por nombre, ruc, email, etc.
         if ($search = $request->input('search')) {
@@ -29,7 +36,7 @@ class EmpresaController extends Controller
         $query->orderBy('name');
 
 
-        return Inertia::render('Empresas/index', [
+        return Inertia::render('empresas/index', [
             'empresas' => $query->paginate(10)->withQueryString(),
             'search' => $search, // para mantener el valor en el input de búsqueda
         ]);
@@ -40,7 +47,7 @@ class EmpresaController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Empresas/create');
+        return Inertia::render('empresas/create');
     }
 
     /**
@@ -62,7 +69,7 @@ class EmpresaController extends Controller
         Empresa::create($request->all());
 
         // Redirigir al índice con un mensaje de éxito si quieres (requiere manejo de flash messages en Vue)
-        return redirect()->route('empresas.index');
+        return redirect()->route('empresas.index')->with('success', ' Empresa creada con exito.');
     }
 
     /**
@@ -78,7 +85,7 @@ class EmpresaController extends Controller
      */
     public function edit(Empresa $empresa) // Usando Route Model Binding
     {
-        return Inertia::render('Empresas/edit', [
+        return Inertia::render('empresas/edit', [
             'empresa' => $empresa,
         ]);
     }
@@ -105,7 +112,7 @@ class EmpresaController extends Controller
         $empresa->update($request->only(['name', 'ruc', 'address', 'phone', 'email']) + ['status' => $request->boolean('status')]);
 
 
-        return redirect()->route('empresas.index');
+        return redirect()->route('empresas.index')->with('success', ' Empresa editada con exito.');
     }
 
     /**
@@ -113,10 +120,22 @@ class EmpresaController extends Controller
      */
     public function destroy(Empresa $empresa) // Usando Route Model Binding
     {
+        
+        
+        // --- Verificación de usuarios asociados ---
+        // Llama a la relación 'users()' y verifica si existe algún registro relacionado
+        if ($empresa->users()->exists()) {
+            // Si existen usuarios, no permitir la eliminación y redirigir con error
+            return redirect()->route('empresas.index')
+                             ->with('error', ' No se puede eliminar la empresa porque tiene usuarios asociados.');
+        }
+        //
+
         try {
+
             $empresa->delete();
              // Redirigir al índice. Inertia recargará los datos.
-            return redirect()->route('empresas.index');
+            return redirect()->route('empresas.index')->with('success', ' Se elimino correctamente.');
         } catch (\Exception $e) {
              // Log::error('Error al eliminar empresa:', ['error' => $e->getMessage(), 'empresa_id' => $empresa->id]);
             // Aquí puedes manejar el error, por ejemplo, si hay registros relacionados
