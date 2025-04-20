@@ -16,10 +16,17 @@ interface UserPageProps extends SharedData {
         prev_page_url: string | null;
     };
     search?: string;
+    auth: {
+        user: User | null; // The logged-in user, or null if not authenticated
+    };
 }
 
 const { props } = usePage<UserPageProps>();
 const users = computed(() => props.users);
+
+// Access the logged-in user from auth props
+const currentUser = computed(() => props.auth?.user); // Use optional chaining in case auth or user is null
+
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Usuarios', href: '/manageusers' }];
 
@@ -163,10 +170,10 @@ onMounted(() => {
                                 <X v-else class="text-red-500" />
                             </TableCell>
                             <TableCell class="flex justify-center gap-2 py-2">
-                                <Button  v-if="!user.is_admin" as-child size="sm" class="bg-blue-500 text-white hover:bg-blue-700">
+                                <Button  v-if="currentUser?.is_admin || !user.is_admin" as-child size="sm" class="bg-blue-500 text-white hover:bg-blue-700">
                                     <Link :href="`/manageusers/${user.id}/edit`"><Pencil /></Link>
                                 </Button>
-                                <Button  v-if="!user.is_admin"  size="sm" class="bg-rose-500 text-white hover:bg-rose-700" @click="openModal(user.id)">
+                                <Button  v-if="currentUser?.is_admin || !user.is_admin"  size="sm" class="bg-rose-500 text-white hover:bg-rose-700" @click="openModal(user.id)">
                                     <Trash />
                                 </Button>
                             </TableCell>

@@ -82,61 +82,84 @@ class ManageuserController extends Controller
      */
     public function edit(User $user)
     {
+        $currentUser = Auth::user(); // Obtiene el usuario logueado
+        $isAdmin = $currentUser && $currentUser->is_admin; // Verifica si es admin
+
+        $empresas = [];
+        // Si el usuario logueado es admin, obtenemos las empresas activas
+        if ($isAdmin) {
+            // Seleccionamos solo 'id' y 'name' para el selector
+            $empresas = Empresa::where('status', true)->get(['id', 'name']);
+        }
+
+        // Cargamos la relación 'empresa' en el usuario si existe para mostrar el valor actual en el combo
+         $user->load('empresa');
+
+
         return Inertia::render('manageusers/edit',[
-            'user' => $user
+            'user' => $user, // El usuario a editar
+            'empresas' => $empresas, // La lista de empresas (vacía si no es admin)
+            // No necesitamos pasar isAdmin explícitamente si ya se comparte globalmente auth.user
+            // 'isAdmin' => $isAdmin,
         ]);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified user in storage.
      */
     public function update(Request $request, User $user)
     {
-        // Log::info('Datos recibidos:', $request->all()); // Útil para depurar si es necesario
+        // Log::info('Datos recibidos:', $request->all());
 
-        // Validar solo los campos que esperamos recibir y procesar
-        // Aseguramos que 'name' sea requerido
-        // 'is_active' es un booleano, puede ser null si no se envía (ej. si el campo está deshabilitado en frontend)
-        // 'reset' es un booleano, también puede ser null si no se envía
-        $validatedData = $request->validate([
+        $currentUser = Auth::user(); // Obtiene el usuario logueado
+        $isAdmin = $currentUser && $currentUser->is_admin; // Verifica si es admin
+
+        $validationRules = [
             'name' => 'required|string|max:255',
-            'is_active' => 'nullable|boolean', // is_active debe ser booleano
-            'reset' => 'nullable|boolean',    // reset debe ser booleano si se envía
-        ]);
+            'is_active' => 'nullable|boolean',
+            'reset' => 'nullable|boolean',
+            // Agregamos la validación para empresa_id SOLO si el usuario logueado es admin
+            // 'required_if:isAdmin,true' significa que es requerido si 'isAdmin' en la request es true
+            // 'exists:empresas,id' verifica que el ID exista en la tabla 'empresas'
+            'empresa_id' => $isAdmin ? 'required|integer|exists:empresas,id' : 'nullable|integer',
+             // Si no es admin, es solo nullable integer (para que la validación no falle si se envía, aunque no debería mostrarse el campo)
+        ];
 
-        // Preparamos los datos para actualizar el usuario.
-        // Solo incluimos los campos que queremos modificar directamente.
+        // Si pasas 'isAdmin' en el formulario (no es recomendable, mejor usar Auth::user() en backend)
+        // $validationRules = [ ... 'empresa_id' => 'required_if:isAdmin,true|integer|exists:empresas,id', 'isAdmin' => 'boolean' ];
+        // Y validar 'isAdmin' aquí si lo envías del frontend
+
+        $validatedData = $request->validate($validationRules);
+
         $userDataToUpdate = [
             'name' => $validatedData['name'],
-            // Usamos el valor validado para 'is_active', por defecto a false si no se envió y es nullable
             'is_active' => $validatedData['is_active'] ?? false,
         ];
 
-        // Lógica condicional para resetear la contraseña
-        $passwordReset = false;
-        // Comprobamos si 'reset' existe en los datos validados Y si su valor es true
-        if (isset($validatedData['reset']) && $validatedData['reset'] === true) {
-             // Si reset es true, añadimos el campo 'password' a los datos a actualizar
-             // Asegúrate de HASHEAR la contraseña antes de guardarla
-             $userDataToUpdate['password'] = Hash::make('123456789');
-             $passwordReset = true; // Marcamos que la contraseña fue reseteada para el mensaje flash
+        // Lógica condicional para actualizar empresa_id SOLO si el usuario logueado es admin
+        if ($isAdmin && isset($validatedData['empresa_id'])) {
+             $userDataToUpdate['empresa_id'] = $validatedData['empresa_id'];
         }
 
-        // Realizamos la actualización usando los datos preparados
-        // Esto es más seguro que $user->update($request->all()) porque evita la asignación masiva de campos no deseados
+        // Lógica condicional para resetear la contraseña
+        $passwordReset = false;
+        if (isset($validatedData['reset']) && $validatedData['reset'] === true) {
+             $userDataToUpdate['password'] = Hash::make('123456789');
+             $passwordReset = true;
+        }
+
+        // Realizamos la actualización
         $user->update($userDataToUpdate);
 
         // Preparamos el mensaje flash
-        $message = ' Usuario editado con éxito.';
+        $message = 'Usuario editado con éxito.';
         if ($passwordReset) {
-            // Añadimos información al mensaje si la contraseña fue reseteada
             $message .= ' La contraseña ha sido reseteada a "123456789".';
         }
 
-        // Redirigimos a la página de índice con el mensaje flash
+        // Redirigimos
         return redirect()->route('manageusers.index')->with('success', $message);
     }
-
 
     /**
      * Remove the specified resource from storage.
